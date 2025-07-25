@@ -1,0 +1,31 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 17
+VisualStudioVersion = 17.14.36203.30
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Absence.API", "Absence.API.csproj", "{ACF6B0E9-AD07-4406-BE89-5886CDB62B3C}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Absence.Domain", "..\Absence.Domain\Absence.Domain.csproj", "{A69994B9-EADB-4A8B-8490-8D8959F16310}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{ACF6B0E9-AD07-4406-BE89-5886CDB62B3C}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{ACF6B0E9-AD07-4406-BE89-5886CDB62B3C}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{ACF6B0E9-AD07-4406-BE89-5886CDB62B3C}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{ACF6B0E9-AD07-4406-BE89-5886CDB62B3C}.Release|Any CPU.Build.0 = Release|Any CPU
+		{A69994B9-EADB-4A8B-8490-8D8959F16310}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{A69994B9-EADB-4A8B-8490-8D8959F16310}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{A69994B9-EADB-4A8B-8490-8D8959F16310}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{A69994B9-EADB-4A8B-8490-8D8959F16310}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {FB7BD6E4-10BF-4638-9C3B-118FDC7F6478}
+	EndGlobalSection
+EndGlobal

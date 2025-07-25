@@ -1,5 +1,4 @@
-﻿using Absence.Domain.Entities;
-using Absence.Domain.Enums;
+﻿using Absence.Domain.Enums;
 
 namespace Absence.API.Models.AbsenceModels
 {

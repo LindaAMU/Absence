@@ -1,4 +1,4 @@
-﻿namespace Absence.WEB.Models
+﻿namespace Abence.WEB.Models
 {
     public class StandardResponse
     {

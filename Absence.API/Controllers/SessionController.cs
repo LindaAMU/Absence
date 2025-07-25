@@ -139,21 +139,3 @@ namespace Absence.API.Controllers
         }
     }
 }
-
-/*
- *
- *StandardResponse response = new();
-            try
-            {
-                response.Success = true;
-                response.Message = $"";
-                return Ok();
-            }
-            catch (Exception ex)
-            {
-                response.Success = false;
-                response.Message = ex.Message;
-
-            }
-            return Ok(response);
- */

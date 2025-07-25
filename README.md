@@ -41,6 +41,10 @@ Por implementar
 ## ✅ TODO
 
 - [ ] Implementar la **interfaz de usuario** (componentes y páginas en Blazor).
-- [ ] **Proteger rutas de vistas** según autenticación/autorización.
+- [✓] **Proteger rutas de vistas** según autenticación/autorización.
 - [ ] Implementar los **servicios de comunicación con la API** desde el frontend.
 - [ ] Crear e integrar **pruebas unitarias** para backend y frontend.
+
+---
+
+Readme generado con IA y actualizado manualmente.

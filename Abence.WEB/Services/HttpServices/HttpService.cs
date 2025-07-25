@@ -1,6 +1,6 @@
 ﻿using Abence.WEB.Models;
-using Abence.WEB.Services.AuthServices;
 using Abence.WEB.Services.StorageServices;
+using Abence.WEB.Utils;
 using Microsoft.AspNetCore.Components.Authorization;
 using System.IdentityModel.Tokens.Jwt;
 using System.Net.Http.Headers;
@@ -10,27 +10,27 @@ using System.Text.Json;
 
 namespace Abence.WEB.Services.HttpServices
 {
-
     public class HttpService : IHttpService
     {
         private readonly HttpClient _httpClient;
         private readonly AuthenticationStateProvider _stateProvider;
         private readonly IConfiguration _configuration;
         private readonly IStorageService _storageService;
-        private readonly String _baseUrl;
+        private readonly string baseUrl;
 
-        private HttpService (HttpClient httpClient, AuthenticationStateProvider authenticationStateProvider, IConfiguration configuration, IStorageService storageService)
+        public HttpService(HttpClient httpClient, AuthenticationStateProvider authenticationStateProvider, IConfiguration configuration, IStorageService storageService)
         {
-            _httpClient = httpClient;
-            _stateProvider = authenticationStateProvider;
             _configuration = configuration;
+            _stateProvider = authenticationStateProvider;
             _storageService = storageService;
-            _baseUrl = _configuration.GetSection("BaseURL").Value;
+            _httpClient = httpClient;
+            baseUrl = _configuration.GetSection("BaseURL").Value;
         }
+
 
         public async Task<T> Get<T>(string uri)
         {
-            HttpRequestMessage request = new(HttpMethod.Get, _baseUrl + uri);
+            HttpRequestMessage request = new(HttpMethod.Get, this.baseUrl + uri);
             try
             {
                 return await SendRequest<T>(request);
@@ -43,7 +43,7 @@ namespace Abence.WEB.Services.HttpServices
 
         public async Task<T> Post<T>(string uri, object value)
         {
-            HttpRequestMessage request = new(HttpMethod.Post, _baseUrl + uri);
+            HttpRequestMessage request = new(HttpMethod.Post, this.baseUrl + uri);
             request.Content = new StringContent(JsonSerializer.Serialize(value), Encoding.UTF8, "application/json");
             try
             {
@@ -60,72 +60,72 @@ namespace Abence.WEB.Services.HttpServices
             try
             {
                 /* Agregar Bearer token */
-                UserModel storageUser = await _storageService.GetItem<UserModel>("_um", StorageService.StorageType.LocalStorage);
-                if (storageUser != null && !String.IsNullOrEmpty(storageUser.Token))
+                UserModel storedUser = await _storageService.GetItem<UserModel>("_um", StorageService.StorageType.LocalStorage);
+                if (storedUser != null && !String.IsNullOrEmpty(storedUser.Message))
                 {
-                    if(IsTokenExpired(storageUser.Token))
+                    if (!IsTokenExpired(storedUser.Message))
                     {
-                        request.Headers.Authorization = new AuthenticationHeaderValue("Bearer", storageUser.Token);
+                        request.Headers.Authorization = new AuthenticationHeaderValue("Bearer", storedUser.Message);
                     }
                 }
                 else
                 {
                     /* Lo enviamos a iniciar sesión */
                 }
+
+
+
                 /* Enviar consulta */
                 using HttpResponseMessage response = await _httpClient.SendAsync(request);
-
                 /* Procesar errores */
-                if (response != null)
+                if (!response.IsSuccessStatusCode)
                 {
-                    //TODO - Gestionar errores
+                    // TODO - Gestionar Errores
                 }
 
                 if (typeof(UserModel).IsAssignableFrom(typeof(T)))
                 {
                     UserModel user = await response.Content.ReadFromJsonAsync<UserModel>();
-                    if (user.Token == null || user != null || user.Token == "")
+                    if (user == null || user.Message == null || user.Message == "")
                     {
-                        //Todo - Gestionar error de inicio de sesión.
-
+                        // TODO - Gestionar Error de Inicio de Sesión
                     }
                     else
                     {
-                        user = UserModelFromToken(user.Token);
-                        JwtSecurityToken securityToken = new JwtSecurityTokenHandler().ReadJwtToken(user.Token);
+                        user = GetUserModelFromToken(user.Message);
+
+                        JwtSecurityToken securityToken = new JwtSecurityTokenHandler().ReadJwtToken(user.Message);
                         int role = int.Parse(securityToken.Claims.First(c => c.Type == "role").Value);
                         string sc = securityToken.Claims.First(c => c.Type == "sc").Value;
                         int userId = int.Parse(securityToken.Claims.First(c => c.Type == ClaimTypes.NameIdentifier).Value);
 
                         ClaimsIdentity claims = new(new List<Claim>
-                        {
-                            new Claim(ClaimTypes.Role, role.ToString()),
-                            new Claim("sc", sc),
-                            new Claim(ClaimTypes.NameIdentifier, userId.ToString())
-                        }, "Auth");
+                {
+                    new Claim(ClaimTypes.Role, role.ToString()),
+                    new Claim("sc", sc),
+                    new Claim(ClaimTypes.NameIdentifier, userId.ToString())
+                }, "Auth");
 
                         ClaimsPrincipal claimsPrincipal = new(claims);
                         try
                         {
-                            /* Generar Nuevo Token */
+                            /* Generar Nuevo Message */
                             /* [Doc: v_def_d#, Est: v_def_s#]*/
                             string status = "";
                             await _storageService.SetItem("_um", user, StorageService.StorageType.LocalStorage);
-                            await ((AuthStateProvider)_stateProvider).MarkUserAsAuthenticated(user.Token);
-
+                            await ((AuthStateProvider)_stateProvider).MarkUserAsAuthenticated(user.Message);
                         }
                         catch (Exception ex)
                         {
                             throw new Exception(ex.Message);
                         }
                         return default;
+
                     }
                 }
 
-
-
-                    /* Entregar respuesta al servicio(controller) */
-                    return await response.Content.ReadFromJsonAsync<T>();
+                /* Entregar respuesta al servicio(controller) */
+                return await response.Content.ReadFromJsonAsync<T>();
             }
             catch (Exception ex)
             {
@@ -133,21 +133,17 @@ namespace Abence.WEB.Services.HttpServices
             }
         }
 
-        private UserModel UserModelFromToken(string token)
+        private UserModel GetUserModelFromToken(string token)
         {
             JwtSecurityToken securityToken = new JwtSecurityTokenHandler().ReadJwtToken(token);
-            string email = securityToken.Claims.First(c => c.Type == ClaimTypes.Email).Value;
-            string role = securityToken.Claims.First(c => c.Type == ClaimTypes.Role).Value;
-            string userName = securityToken.Claims.First(c => c.Type == "UserName").Value;
-            string userLastName = securityToken.Claims.First(c => c.Type == "UserLastName").Value;
+            string role = securityToken.Claims.First(c => c.Type == "role").Value;
+            string sc = securityToken.Claims.First(c => c.Type == "sc").Value;
             string nameIdentifier = securityToken.Claims.First(c => c.Type == ClaimTypes.NameIdentifier).Value;
 
-            // Retornar un UserModel con los datos extraídos
             return new UserModel
             {
                 Id = int.Parse(nameIdentifier),
-                Email = email,
-                Token = token
+                Message = token,
             };
         }
 
@@ -164,5 +160,6 @@ namespace Abence.WEB.Services.HttpServices
             }
             return true;
         }
+
     }
 }

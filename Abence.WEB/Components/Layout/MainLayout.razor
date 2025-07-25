@@ -1,9 +1,50 @@
-﻿@inherits LayoutComponentBase
+﻿@using Abence.WEB.Components.Pages.Login
+@using Abence.WEB.Services.StorageServices
+@using Abence.WEB.Utils
+@inject IStorageService StorageService
+@inject AuthenticationStateProvider AuthStateProvider
+@inherits LayoutComponentBase
 
-@Body
+@if (!isLoad)
+{
+    <p>Cargando...</p>
+}
+else
+{
+    <CascadingAuthenticationState>
+        <AuthorizeView>
+            <Authorized>
+                @Body
+            </Authorized>
+            <NotAuthorized>
+                <Login />
+            </NotAuthorized>
+        </AuthorizeView>
+    </CascadingAuthenticationState>
+}
+
 
 <div id="blazor-error-ui" data-nosnippet>
     An unhandled error has occurred.
     <a href="." class="reload">Reload</a>
     <span class="dismiss">🗙</span>
 </div>
+
+@code {
+    private bool isLoad = false;
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            isLoad = true;
+            StorageService.InitializeForClientSide();
+            await ((AuthStateProvider)AuthStateProvider).GetAuthenticationStateAsync();
+            StateHasChanged();
+        }
+        else
+        {
+            isLoad = true;
+        }
+    }
+}

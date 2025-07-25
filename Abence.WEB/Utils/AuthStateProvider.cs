@@ -1,12 +1,13 @@
 ﻿using Abence.WEB.Models;
+using Abence.WEB.Services.AuthServices;
 using Abence.WEB.Services.StorageServices;
 using Microsoft.AspNetCore.Components.Authorization;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 
-namespace Abence.WEB.Services.AuthServices
+namespace Abence.WEB.Utils
 {
-    public class AuthStateProvider : AuthenticationStateProvider
+    public class AuthStateProvider : AuthenticationStateProvider, IAuthStateProvider
     {
         private readonly IStorageService _storageService;
         private ClaimsPrincipal user = new ClaimsPrincipal(new ClaimsIdentity());
@@ -18,29 +19,29 @@ namespace Abence.WEB.Services.AuthServices
 
         public override async Task<AuthenticationState> GetAuthenticationStateAsync()
         {
+            ClaimsPrincipal principal;
+
             try
             {
-                var accountObj = await _storageService.GetItem<UserModel>("_ut", StorageService.StorageType.LocalStorage);
-                if (accountObj != null && !string.IsNullOrWhiteSpace(accountObj.Token))
+                var accountObj = await _storageService.GetItem<UserModel>("_um", StorageService.StorageType.LocalStorage);
+                if (accountObj != null && !string.IsNullOrWhiteSpace(accountObj.Message))
                 {
-                    var trace = accountObj.Token;
+                    var trace = accountObj.Message;
                     var identity = new ClaimsIdentity(ParseClaimsFromJwt(trace), "jwt");
-                    user = new ClaimsPrincipal(identity);
-                    NotifyAuthenticationStateChanged(Task.FromResult(new AuthenticationState(user)));
+                    principal = new ClaimsPrincipal(identity);
                 }
                 else
                 {
-                    user = new ClaimsPrincipal(new ClaimsIdentity());
-                    NotifyAuthenticationStateChanged(Task.FromResult(new AuthenticationState(user)));
+                    principal = new ClaimsPrincipal(new ClaimsIdentity());
                 }
             }
             catch (Exception ex)
             {
-                // Registrar la excepción
                 Console.WriteLine($"Error en GetAuthenticationStateAsync: {ex.Message}");
-                throw; // Propagar la excepción
+                principal = new ClaimsPrincipal(new ClaimsIdentity());
             }
 
+            user = principal;
             return new AuthenticationState(user);
         }
 

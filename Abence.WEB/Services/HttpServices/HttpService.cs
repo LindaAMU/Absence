@@ -16,7 +16,7 @@ namespace Abence.WEB.Services.HttpServices
         private readonly AuthenticationStateProvider _stateProvider;
         private readonly IConfiguration _configuration;
         private readonly IStorageService _storageService;
-        private readonly string baseUrl;
+        private readonly string _baseUrl;
 
         public HttpService(HttpClient httpClient, AuthenticationStateProvider authenticationStateProvider, IConfiguration configuration, IStorageService storageService)
         {
@@ -24,13 +24,13 @@ namespace Abence.WEB.Services.HttpServices
             _stateProvider = authenticationStateProvider;
             _storageService = storageService;
             _httpClient = httpClient;
-            baseUrl = _configuration.GetSection("BaseURL").Value;
+            _baseUrl = _configuration.GetSection("BaseURL").Value;
         }
 
 
         public async Task<T> Get<T>(string uri)
         {
-            HttpRequestMessage request = new(HttpMethod.Get, this.baseUrl + uri);
+            HttpRequestMessage request = new(HttpMethod.Get, _baseUrl + uri);
             try
             {
                 return await SendRequest<T>(request);
@@ -43,7 +43,7 @@ namespace Abence.WEB.Services.HttpServices
 
         public async Task<T> Post<T>(string uri, object value)
         {
-            HttpRequestMessage request = new(HttpMethod.Post, this.baseUrl + uri);
+            HttpRequestMessage request = new(HttpMethod.Post, _baseUrl + uri);
             request.Content = new StringContent(JsonSerializer.Serialize(value), Encoding.UTF8, "application/json");
             try
             {

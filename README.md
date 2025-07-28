@@ -45,6 +45,9 @@ Este proyecto es una solución modular desarrollada con **ASP.NET Core** para el
 - Puede **crear**, **modificar** o **eliminar** usuarios.
 - Puede **ver todas las solicitudes**.
 - Puede **aprobar o rechazar solicitudes**, pero **solo si están pendientes**.
+- Puede ingresar con las siguientes credenciales:
+     Email: admin@example.com
+     Password: Nwoork.25
 
 ### Usuario
 - Puede **ver todas sus solicitudes**.

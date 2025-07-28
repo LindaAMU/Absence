@@ -1,8 +1,8 @@
-﻿using Absence.Domain.Enums;
+﻿using static Abence.WEB.Utils.Constants;
 
-namespace Absence.API.Models.AbsenceModels
+namespace Abence.WEB.Models.AbsenceModels
 {
-    public class AbsenceRequestModel
+    public class AbsenceLightModel
     {
         public AbsenceType Type { get; set; }
         public DateTime StartDate { get; set; }

@@ -4,6 +4,6 @@ namespace Absence.API.Models.AbsenceModels
 {
     public class AbsenceResponse : StandardResponse
     {
-        public List<AbsenceRequest> Results { get; set; }
+        public List<AbsenceListModel> Results { get; set; }
     }
 }

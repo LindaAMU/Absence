@@ -54,6 +54,13 @@ namespace Absence.API.Controllers
 
                 _absenceUnitOfWork.UserRepository.Insert(newUser);
                 _absenceUnitOfWork.Save();
+                Role newUserRole = new()
+                {
+                    Name = "User",
+                    UserId = newUser.Id,
+                };
+                _absenceUnitOfWork.RoleRepository.Insert(newUserRole);
+                _absenceUnitOfWork.Save();
 
                 response.Success = true;
                 response.Message = "User Created";

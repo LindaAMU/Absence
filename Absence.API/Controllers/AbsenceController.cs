@@ -32,9 +32,15 @@ namespace Absence.API.Controllers
                     response.Message = "Unauthorized user.";
                     return Unauthorized(response);
                 }
+                /* Validar Modelo */
+                if (!Enum.IsDefined(typeof(AbsenceType), request.Type))
+                {
+                    response.Success = false;
+                    response.Message = "Invalid type of request.";
+                    return BadRequest(response);
+                }
 
                 /* Validar Fechas */
-                DateTime dateTime = DateTime.UtcNow;
 
                 if (request.StartDate >= request.EndDate)
                 {
@@ -43,13 +49,27 @@ namespace Absence.API.Controllers
                     return BadRequest(response);
                 }
 
+                var existingRequests = _absenceUnitOfWork.AbsenceRepository.Get().Where(r => r.UserId == user.Id);
+
+                bool overlaps = existingRequests.Any(r =>
+                    request.StartDate < r.EndDate &&
+                    request.EndDate > r.StartDate
+                );
+
+                if (overlaps)
+                {
+                    response.Success = false;
+                    response.Message = "There is already a request that overlaps with the selected dates.";
+                    return Conflict(response);
+                }
+
                 /* Insertamos el AbsenceRequest */
                 AbsenceRequest newRequest = new()
                 {
                     StartDate = request.StartDate,
                     EndDate = request.EndDate,
                     Type = request.Type,
-                    UserId = request.UserId,
+                    UserId = user.Id,
                 };
                 _absenceUnitOfWork.AbsenceRepository.Insert(newRequest);
                 _absenceUnitOfWork.Save();
@@ -84,7 +104,8 @@ namespace Absence.API.Controllers
 
                 /* Resultados Rol: Admin */
                 List<AbsenceRequest> results = new();
-                if (user.Roles.Any(r => r.Name.Equals(Constants.S_ROLE_ADMIN)))
+                var userRole = _absenceUnitOfWork.RoleRepository.Get(r => r.UserId == user.Id).FirstOrDefault();
+                if (userRole != null && userRole.Name.Equals("Admin"))
                 {
                     results = _absenceUnitOfWork.AbsenceRepository.Get().ToList();
                 }
@@ -94,9 +115,22 @@ namespace Absence.API.Controllers
                     results = _absenceUnitOfWork.AbsenceRepository.Get(a => a.UserId == user.Id).ToList();
                 }
 
+                var userList = _absenceUnitOfWork.UserRepository.Get().Select(u => new {key = u.Id, value = u.Email}).ToDictionary(u => u.key, u => u.value);
+
+                List<AbsenceListModel> list = results.Select(r => new AbsenceListModel()
+                {
+                    Id = r.Id,
+                    Email = userList[r.UserId],
+                    AbsenceType = r.Type,
+                    StartDate = r.StartDate,
+                    EndDate = r.EndDate,
+                    RequestStatus = r.Status
+                }).ToList();
+
                 response.Success = true;
                 response.Message = $"{results.Count} results were found";
-                return Ok(results);
+                response.Results = list;
+                return Ok(response);
             }
             catch (Exception ex)
             {
@@ -109,7 +143,7 @@ namespace Absence.API.Controllers
         [HttpPost("[action]")]
         [EnableCors("PolicyCors")]
         [Authorize(AuthenticationSchemes = "Bearer")]
-        public IActionResult UpdateStatus([FromBody] int absenceId, RequestStatus status)
+        public IActionResult UpdateStatus(int absenceId, RequestStatus status)
         {
             StandardResponse response = new();
             try
@@ -122,8 +156,8 @@ namespace Absence.API.Controllers
                     return Unauthorized(response);
                 }
 
-                /* Validamos Rol */
-                if (!user.Roles.Any(r => r.Name.Equals(Constants.S_ROLE_ADMIN)))
+                var userRole = _absenceUnitOfWork.RoleRepository.Get(r => r.UserId == user.Id).FirstOrDefault();
+                if (userRole != null && !userRole.Name.Equals("Admin"))
                 {
                     response.Success = false;
                     response.Message = "Unauthorized user.";
@@ -139,7 +173,7 @@ namespace Absence.API.Controllers
                     return NotFound(response);
                 }
 
-                if (status != RequestStatus.Pending)
+                if (ar.Status != RequestStatus.Pending || status == RequestStatus.Pending)
                 {
                     response.Success = false;
                     response.Message = "Unable to update status";

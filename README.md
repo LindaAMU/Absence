@@ -61,7 +61,7 @@ Este proyecto es una solución modular desarrollada con **ASP.NET Core** para el
 
 ## ✅ TODO
 
-- [✓] Implementar la **interfaz de usuario** (componentes y páginas en Blazor).
+- [x] Implementar la **interfaz de usuario** (componentes y páginas en Blazor).
 - [✓] **Proteger rutas de vistas** según autenticación/autorización.
 - [✓] Implementar los **servicios de comunicación con la API** desde el frontend.
 - [✓] Crear e integrar **pruebas unitarias** para backend y frontend.

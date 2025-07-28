@@ -50,15 +50,17 @@ namespace Abence.WEB.Utils
             var identity = new ClaimsIdentity(ParseClaimsFromJwt(trace), "jwt");
             user = new ClaimsPrincipal(identity);
 
-            // Notifica al sistema de cambios en el estado de autenticación
+            
             var authState = Task.FromResult(new AuthenticationState(user));
             NotifyAuthenticationStateChanged(authState);
         }
 
-        public void MarkUserAsLoggedOut()
+        public async void MarkUserAsLoggedOut()
         {
             user = new ClaimsPrincipal(new ClaimsIdentity());
-            NotifyAuthenticationStateChanged(GetAuthenticationStateAsync());
+            await _storageService.RemoveItem("_um", StorageService.StorageType.LocalStorage);
+            var authState = Task.FromResult(new AuthenticationState(user));
+            NotifyAuthenticationStateChanged(authState);
         }
 
         public IEnumerable<Claim> ParseClaimsFromJwt(string jwt)

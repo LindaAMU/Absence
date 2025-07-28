@@ -1,5 +1,4 @@
-﻿using Absence.Domain.Context;
-using Absence.Domain.Entities;
+﻿using Absence.Domain.Entities;
 
 namespace Absence.Domain.Repository
 {

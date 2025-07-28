@@ -1,0 +1,62 @@
+﻿@using Abence.WEB.Models.UserModels
+@using Abence.WEB.Services.UserServices
+@inject IUserServices _us
+
+@if (Visible)
+{
+    <div class="fixed inset-0 bg-slate-800/40 flex items-center justify-center z-50">
+        <div class="bg-white p-6 rounded-lg shadow-lg w-full max-w-md">
+            <h2 class="text-xl font-semibold mb-4">Editar usuario</h2>
+
+            <EditForm Model="_editForm" OnValidSubmit="HandleSubmit">
+                <DataAnnotationsValidator />
+                <ValidationSummary />
+
+                <div class="mb-4">
+                    <label class="block mb-1 font-medium">Email</label>
+                    <InputText class="w-full border border-gray-300 px-3 py-2 rounded" @bind-Value="_editForm.Email" />
+                    <ValidationMessage For="@(() => _editForm.Email)" />
+                </div>
+
+                <div class="mb-4">
+                    <label class="block mb-1 font-medium">Contraseña</label>
+                    <InputText type="password" class="w-full border border-gray-300 px-3 py-2 rounded" @bind-Value="_editForm.Password" />
+                    <ValidationMessage For="@(() => _editForm.Password)" />
+                </div>
+
+                <div class="flex justify-end space-x-2">
+                    <button type="button" class="px-4 py-2 bg-gray-300 rounded hover:bg-gray-400" @onclick="OnClose">Cancelar</button>
+                    <button type="submit" class="px-4 py-2 bg-sky-600 text-white rounded hover:bg-sky-700">Guardar</button>
+                </div>
+            </EditForm>
+        </div>
+    </div>
+}
+
+@code {
+    [Parameter] public bool Visible { get; set; }
+    [Parameter] public EventCallback OnClose { get; set; }
+    [Parameter] public UserModel CurrentUser { get; set; }
+
+    private UserModel _editForm = new();
+
+    protected override void OnParametersSet()
+    {
+        if (CurrentUser is not null)
+        {
+            _editForm = new UserModel
+            {
+                Id = CurrentUser.Id,
+                Email = CurrentUser.Email,
+                Password = ""
+            };
+        }
+    }
+
+    private async Task HandleSubmit()
+    {
+        await _us.Update(_editForm); // tu servicio de actualización
+        _editForm = new();
+        await OnClose.InvokeAsync();
+    }
+}

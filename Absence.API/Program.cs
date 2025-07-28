@@ -32,11 +32,12 @@ builder.Services.AddAuthentication(opts =>
             ValidateAudience = true,
             ValidateLifetime = true,
             RequireExpirationTime = true,
-            ValidAudience = "reader",
-            ValidIssuer = "issuer",
+            ValidAudience = builder.Configuration["JWT:ValidAudience"],
+            ValidIssuer = builder.Configuration["JWT:ValidIssue"],
             IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(builder.Configuration["JWT:Secret"])),
         };
     });
+builder.Services.AddAuthorization();
 
 /* Configuración de UOW */
 builder.Services.AddTransient<IAbsenceUnitOfWork, AbsenceUnitOfWork>();
@@ -51,12 +52,13 @@ if (app.Environment.IsDevelopment())
     app.UseSwaggerUI();
 }
 
+app.UseRouting();
+app.UseAuthentication();
+app.UseAuthorization();
 app.UseDefaultFiles();
 app.UseStaticFiles();
 app.UseHttpsRedirection();
-app.UseRouting();
-app.UseCors("PolicyCors");
-app.UseAuthentication();    
+app.UseCors("PolicyCors");   
 
 app.MapGet("/", () => "Ok");
 

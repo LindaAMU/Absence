@@ -1,4 +1,5 @@
 ﻿using Abence.WEB.Models;
+using Abence.WEB.Models.UserModels;
 using Abence.WEB.Services.HttpServices;
 using Abence.WEB.Utils;
 using Microsoft.AspNetCore.Components;
@@ -26,7 +27,7 @@ namespace Abence.WEB.Services.AuthServices
             try
             {
                 UserModel response = await _httpService.Post<UserModel>(_configuration.GetSection("API:Auth").Value, model);
-                _nav.NavigateTo("/Inicio");
+                _nav.NavigateTo("/Home");
             }
             catch (Exception ex)
             {

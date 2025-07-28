@@ -1,40 +1,44 @@
 ﻿@using Abence.WEB.Components.Pages.Login
 @using Abence.WEB.Services.StorageServices
+@using Abence.WEB.Services.AuthServices
 @using Abence.WEB.Utils
 @inject IStorageService StorageService
+@inject IAuthenticationService _as
+@inject NavigationManager _nm
 @inject AuthenticationStateProvider AuthStateProvider
 @inherits LayoutComponentBase
 
-<div class="min-h-screen flex items-center justify-center bg-gray-50">
-    <main class="w-full text-center space-y-8 p-4">
-        @if (!isLoad)
-        {
-            <p>Cargando...</p>
-        }
-        else
-        {
+
+<div class="flex flex-col w-full min-h-screen bg-gray-50">
+    <div class="flex w-full justify-end p-4">
+        <button class="bg-sky-600 text-white px-4 py-2 rounded-md hover:bg-sky-700 transition-colors font-semibold" 
+        @onclick="Logout">LogOut</button>
+    </div>
+    <div class="flex w-full flex-1 justify-center items-center">
+        <main class="text-center space-y-8 p-4">
+            @if (!isLoad)
+            {
+                <p>Cargando...</p>
+            }
+            else
+            {
     
-            <CascadingAuthenticationState>
-                <AuthorizeView>
-                    <Authorized>
-                        @Body
-                    </Authorized>
-                    <NotAuthorized>
-                        <Login />
-                    </NotAuthorized>
-                </AuthorizeView>
-            </CascadingAuthenticationState>
+                <CascadingAuthenticationState>
+                    <AuthorizeView>
+                        <Authorized>
+                            @Body
+                        </Authorized>
+                        <NotAuthorized>
+                            <Login />
+                        </NotAuthorized>
+                    </AuthorizeView>
+                </CascadingAuthenticationState>
     
-        }
-    </main>
+            }
+        </main>
+    </div>
 </div>
 
-
-@* <div id="blazor-error-ui" data-nosnippet>
-    An unhandled error has occurred.
-    <a href="." class="reload">Reload</a>
-    <span class="dismiss">🗙</span>
-</div> *@
 
 @code {
     private bool isLoad = false;
@@ -52,5 +56,11 @@
         {
             isLoad = true;
         }
+    }
+
+    private async void Logout()
+    {
+        await _as.Logout();
+        _nm.NavigateTo("/Login", true);
     }
 }

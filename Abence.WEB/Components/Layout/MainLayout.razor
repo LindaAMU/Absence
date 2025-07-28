@@ -5,30 +5,36 @@
 @inject AuthenticationStateProvider AuthStateProvider
 @inherits LayoutComponentBase
 
-@if (!isLoad)
-{
-    <p>Cargando...</p>
-}
-else
-{
-    <CascadingAuthenticationState>
-        <AuthorizeView>
-            <Authorized>
-                @Body
-            </Authorized>
-            <NotAuthorized>
-                <Login />
-            </NotAuthorized>
-        </AuthorizeView>
-    </CascadingAuthenticationState>
-}
+<div class="min-h-screen flex items-center justify-center bg-gray-50">
+    <main class="w-full text-center space-y-8 p-4">
+        @if (!isLoad)
+        {
+            <p>Cargando...</p>
+        }
+        else
+        {
+    
+            <CascadingAuthenticationState>
+                <AuthorizeView>
+                    <Authorized>
+                        @Body
+                    </Authorized>
+                    <NotAuthorized>
+                        <Login />
+                    </NotAuthorized>
+                </AuthorizeView>
+            </CascadingAuthenticationState>
+    
+        }
+    </main>
+</div>
 
 
-<div id="blazor-error-ui" data-nosnippet>
+@* <div id="blazor-error-ui" data-nosnippet>
     An unhandled error has occurred.
     <a href="." class="reload">Reload</a>
     <span class="dismiss">🗙</span>
-</div>
+</div> *@
 
 @code {
     private bool isLoad = false;

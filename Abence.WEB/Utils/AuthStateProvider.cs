@@ -1,4 +1,4 @@
-﻿using Abence.WEB.Models;
+﻿using Abence.WEB.Models.UserModels;
 using Abence.WEB.Services.AuthServices;
 using Abence.WEB.Services.StorageServices;
 using Microsoft.AspNetCore.Components.Authorization;

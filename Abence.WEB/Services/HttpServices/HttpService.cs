@@ -1,4 +1,4 @@
-﻿using Abence.WEB.Models;
+﻿using Abence.WEB.Models.UserModels;
 using Abence.WEB.Services.StorageServices;
 using Abence.WEB.Utils;
 using Microsoft.AspNetCore.Components.Authorization;
@@ -93,25 +93,8 @@ namespace Abence.WEB.Services.HttpServices
                     else
                     {
                         user = GetUserModelFromToken(user.Message);
-
-                        JwtSecurityToken securityToken = new JwtSecurityTokenHandler().ReadJwtToken(user.Message);
-                        int role = int.Parse(securityToken.Claims.First(c => c.Type == "role").Value);
-                        string sc = securityToken.Claims.First(c => c.Type == "sc").Value;
-                        int userId = int.Parse(securityToken.Claims.First(c => c.Type == ClaimTypes.NameIdentifier).Value);
-
-                        ClaimsIdentity claims = new(new List<Claim>
-                {
-                    new Claim(ClaimTypes.Role, role.ToString()),
-                    new Claim("sc", sc),
-                    new Claim(ClaimTypes.NameIdentifier, userId.ToString())
-                }, "Auth");
-
-                        ClaimsPrincipal claimsPrincipal = new(claims);
                         try
                         {
-                            /* Generar Nuevo Message */
-                            /* [Doc: v_def_d#, Est: v_def_s#]*/
-                            string status = "";
                             await _storageService.SetItem("_um", user, StorageService.StorageType.LocalStorage);
                             await ((AuthStateProvider)_stateProvider).MarkUserAsAuthenticated(user.Message);
                         }
@@ -136,13 +119,16 @@ namespace Abence.WEB.Services.HttpServices
         private UserModel GetUserModelFromToken(string token)
         {
             JwtSecurityToken securityToken = new JwtSecurityTokenHandler().ReadJwtToken(token);
-            string role = securityToken.Claims.First(c => c.Type == "role").Value;
+            string role = securityToken.Claims.First(c => c.Type == ClaimTypes.Role).Value;
             string sc = securityToken.Claims.First(c => c.Type == "sc").Value;
+            string email = securityToken.Claims.First(c => c.Type == ClaimTypes.Email).Value;
             string nameIdentifier = securityToken.Claims.First(c => c.Type == ClaimTypes.NameIdentifier).Value;
 
             return new UserModel
             {
                 Id = int.Parse(nameIdentifier),
+                Email = email,
+                Role = role,
                 Message = token,
             };
         }

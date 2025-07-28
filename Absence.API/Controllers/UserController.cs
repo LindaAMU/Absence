@@ -109,7 +109,7 @@ namespace Absence.API.Controllers
 
                 response.Success = true;
                 response.Message = "Authorized User";
-                return Ok();
+                return Ok(response);
             }
             catch (Exception ex)
             {
@@ -123,7 +123,7 @@ namespace Absence.API.Controllers
         [HttpPost("[action]")]
         [EnableCors("PolicyCors")]
         [Authorize(AuthenticationSchemes = "Bearer")]
-        public IActionResult Delete([FromBody] int id)
+        public IActionResult Delete(int id)
         {
             StandardResponse response = new();
             try
@@ -150,7 +150,6 @@ namespace Absence.API.Controllers
 
                 response.Success = true;
                 response.Message = "User Deleted Successfully";
-                return Ok();
             }
             catch (Exception ex)
             {
@@ -159,6 +158,38 @@ namespace Absence.API.Controllers
 
             }
             return Ok(response);
+        }
+
+        [HttpGet("[action]")]
+        [EnableCors("PolicyCors")]
+        [Authorize(AuthenticationSchemes = "Bearer")]
+        public IActionResult GetAll()
+        {
+            UserResponse response = new();
+            try
+            {
+                /* Validar Requester y Rol */
+                if (!ValidateRequester(User, out var user) && !user.Roles.Any(r => r.Name.Equals(Constants.S_ROLE_ADMIN)))
+                {
+                    response.Success = false;
+                    response.Message = "Unauthorized user.";
+                    return Unauthorized(response);
+                }
+
+                var userList = _absenceUnitOfWork.UserRepository.Get().Select(u => new UserRequest(u.Id, u.Email)).ToList();
+
+                response.Success = true;
+                response.Users = userList;
+                response.Message = $"{userList.Count} users were found";
+                return Ok(response);
+
+            } 
+            catch (Exception ex)
+            {
+
+            }
+            return Ok(response);
+
         }
 
         private string Hash(string pass)

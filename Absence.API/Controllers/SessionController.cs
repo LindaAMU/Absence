@@ -50,7 +50,7 @@ namespace Absence.API.Controllers
 
                 /* Se genera token */
                 var userRole = _absenceUnitOfWork.RoleRepository.Get(r => r.UserId == user.Id).FirstOrDefault();
-                var (jwt, exp) = JwtCreate(user.Id, sessionCode, userRole.Id);
+                var (jwt, exp) = JwtCreate(user.Id, sessionCode, userRole.Name, user.Email);
 
                 response.Success = true;
                 response.Message = jwt;
@@ -66,7 +66,7 @@ namespace Absence.API.Controllers
         }
 
 
-        private (string jwt, DateTime expires) JwtCreate(int userId, string sessionCode, int roleId)
+        private (string jwt, DateTime expires) JwtCreate(int userId, string sessionCode, string roleName, string email)
         {
             var secret = Encoding.UTF8.GetBytes(_configuration["JWT:Secret"]);
             var key = new SymmetricSecurityKey(secret);
@@ -78,10 +78,9 @@ namespace Absence.API.Controllers
             {
                 new Claim(ClaimTypes.NameIdentifier, userId.ToString()),
                 new Claim("sc", sessionCode),
-                new Claim("role", roleId.ToString()),
+                new Claim(ClaimTypes.Role, roleName),
+                new Claim(ClaimTypes.Email, email),
                 new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString()),
-                new Claim(JwtRegisteredClaimNames.Iss, _configuration["JWT:ValidIssue"]),
-                new Claim(JwtRegisteredClaimNames.Aud, _configuration["JWT:ValidAudience"])
             };
 
             var token = new JwtSecurityToken(

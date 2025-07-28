@@ -1,0 +1,115 @@
+﻿@page "/Users"
+@using Abence.WEB.Models.UserModels
+@using Abence.WEB.Services.UserServices
+@inject IUserServices _us
+
+<div class="bg-white max-w-4xl mx-auto p-8 rounded-lg shadow-md">
+    <div class="max-w-3xl mx-auto space-y-6 px-4">
+
+        <!-- Encabezado y botón -->
+        <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between space-y-2 sm:space-y-0 rounded-md">
+            <h1 class="text-2xl font-bold text-gray-800">
+                Users
+            </h1>
+            <button class="bg-sky-600 text-white px-4 py-2 rounded-md hover:bg-sky-700 transition-colors font-semibold"
+                    @onclick="() => _showModal = true">
+                New User
+            </button>
+        </div>
+
+        <!-- Tabla -->
+        <div class="overflow-x-auto shadow-md rounded-lg border border-sky-200">
+            <table class="w-full text-sm text-left text-gray-500">
+                <thead class="text-center text-xs text-gray-700 uppercase bg-sky-200">
+                    <tr>
+                        <th class="px-4 py-2">#</th>
+                        <th class="px-4 py-2">Email</th>
+                        <th class="px-4 py-2">Actions</th>
+                    </tr>
+                </thead>
+                <tbody class="divide-y divide-gray-200 text-sm">
+                    @foreach (var u in _users)
+                    {
+                        <tr>
+                            <td class="px-4 py-2">@u.Id</td>
+                            <td class="px-4 py-2">@u.Email</td>
+                            <td class="text-center px-4 py-2 space-x-2">
+                                <button class="text-blue-600 hover:underline" 
+                                @onclick="() => EditUser(u)">
+                                    Edit
+                                    </button>
+                                <button class="text-red-600 hover:underline" 
+                                @onclick="() => DeleteUser(u)">
+                                    Delete
+                                    </button>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<NewUserModal Visible="_showModal" OnClose="@CloseNewUserModal" />
+<EditUserModal Visible="_showEditModal" OnClose="CloseEditUserModal" CurrentUser="_currentUser" />
+<ConfirmModal Visible="_showConfirmModal" OnCancel="CloseConfirmDeleteModal" OnConfirm="ConfirmDelete" />
+
+@code {
+    private List<UserModel> _users = new();
+    private UserModel _currentUser;
+    private bool _showModal = false;
+    private bool _showEditModal = false;    
+    private bool _showConfirmModal = false;
+
+    protected override async void OnInitialized()
+    {
+        var list = await _us.GetAll();
+        _users = list.Select(u => new UserModel((int)u.Id, u.Email)).ToList();
+        StateHasChanged();
+    }
+
+    private async void RefreshList()
+    {
+        var list = await _us.GetAll();
+        _users = list.Select(u => new UserModel((int)u.Id, u.Email)).ToList();
+        StateHasChanged();
+    }
+
+    private void CloseNewUserModal()
+    {
+        _showModal = false;
+        RefreshList();
+    }
+
+    private void EditUser(UserModel u)
+    {
+        _currentUser = u;
+        _showEditModal = true;
+    }
+
+    private void CloseEditUserModal()
+    {
+        _showEditModal = false;
+        RefreshList();
+    }
+    //
+    private void DeleteUser(UserModel u)
+    {
+        _currentUser = u;
+        _showConfirmModal = true;
+    }
+
+    private void CloseConfirmDeleteModal()
+    {
+        _showConfirmModal = false;
+        RefreshList();
+    }
+
+    private async Task ConfirmDelete()
+    {
+        await _us.Delete(_currentUser);
+        _showConfirmModal = false;
+        RefreshList();
+    }
+}

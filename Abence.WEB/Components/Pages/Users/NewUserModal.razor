@@ -1,0 +1,47 @@
+﻿@using Abence.WEB.Services.UserServices
+@inject IUserServices _us
+
+@if (Visible)
+{
+    <div class="fixed inset-0 bg-slate-800/40 flex items-center justify-center z-50">
+        <div class="bg-white p-6 rounded-lg shadow-lg w-full max-w-md">
+            <h2 class="text-xl font-semibold mb-4">Crear nuevo usuario</h2>
+
+            <EditForm Model="_userForm" OnValidSubmit="HandleSubmit">
+                <DataAnnotationsValidator />
+                <ValidationSummary />
+
+                <div class="mb-4">
+                    <label class="block mb-1 font-medium">Email</label>
+                    <InputText class="w-full border border-gray-300 px-3 py-2 rounded" @bind-Value="_userForm.Email" />
+                    <ValidationMessage For="@(() => _userForm.Email)" />
+                </div>
+
+                <div class="mb-4">
+                    <label class="block mb-1 font-medium">Contraseña</label>
+                    <InputText type="password" class="w-full border border-gray-300 px-3 py-2 rounded" @bind-Value="_userForm.Password" />
+                    <ValidationMessage For="@(() => _userForm.Password)" />
+                </div>
+
+                <div class="flex justify-end space-x-2">
+                    <button type="button" class="px-4 py-2 bg-gray-300 rounded hover:bg-gray-400" @onclick="OnClose">Cancelar</button>
+                    <button type="submit" class="px-4 py-2 bg-sky-600 text-white rounded hover:bg-sky-700">Guardar</button>
+                </div>
+            </EditForm>
+        </div>
+    </div>
+}
+
+@code {
+    [Parameter] public bool Visible { get; set; }
+    [Parameter] public EventCallback OnClose { get; set; }
+
+    private LoginFormModel _userForm { get; set; } = new();
+
+    private async Task HandleSubmit()
+    {
+        await _us.Create(_userForm);
+        _userForm = new();
+        await OnClose.InvokeAsync();
+    }
+}

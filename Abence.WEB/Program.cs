@@ -2,6 +2,7 @@ using Abence.WEB.Components;
 using Abence.WEB.Services.AuthServices;
 using Abence.WEB.Services.HttpServices;
 using Abence.WEB.Services.StorageServices;
+using Abence.WEB.Services.UserServices;
 using Abence.WEB.Utils;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Components.Authorization;
@@ -41,6 +42,7 @@ builder.Services.AddServerSideBlazor().AddCircuitOptions(options => {
 });
 
 builder.Services.AddScoped<IStorageService, StorageService>();
+builder.Services.AddScoped<IUserServices, UserService>();
 builder.Services.AddHttpClient<IHttpService, HttpService>();
 
 var app = builder.Build();

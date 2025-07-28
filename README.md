@@ -32,6 +32,7 @@ Este proyecto es una solución modular desarrollada con **ASP.NET Core** para el
 - **ASP.NET Core 9**
 - **Blazor WebAssembly**
 - **Entity Framework Core**
+- **SQLite**
 - **Patrón Unit of Work**
 - **Inyección de dependencias (DI)**
 - **Swagger**

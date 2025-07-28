@@ -1,4 +1,5 @@
 using Abence.WEB.Components;
+using Abence.WEB.Services.AbsenceServices;
 using Abence.WEB.Services.AuthServices;
 using Abence.WEB.Services.HttpServices;
 using Abence.WEB.Services.StorageServices;
@@ -43,6 +44,7 @@ builder.Services.AddServerSideBlazor().AddCircuitOptions(options => {
 
 builder.Services.AddScoped<IStorageService, StorageService>();
 builder.Services.AddScoped<IUserServices, UserService>();
+builder.Services.AddScoped<IAbsenceService, AbsenceService>();
 builder.Services.AddHttpClient<IHttpService, HttpService>();
 
 var app = builder.Build();

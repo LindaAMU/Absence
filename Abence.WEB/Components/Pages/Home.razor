@@ -12,7 +12,8 @@
             <p class="text-sm text-gray-500">Manages the list of registered users.</p>
         </div>
     </AuthorizeView>
-    <div class="cursor-pointer bg-white p-6 rounded-xl shadow hover:shadow-lg transition hover:outline-none hover:ring-2 hover:ring-sky-500 hover:border-sky-300 w-80">
+    <div @onclick='() => NavigationManager.NavigateTo("/Absences", false)' 
+        class="cursor-pointer bg-white p-6 rounded-xl shadow hover:shadow-lg transition hover:outline-none hover:ring-2 hover:ring-sky-500 hover:border-sky-300 w-80">
         <h2 class="text-xl font-semibold mb-2">Absence Requests</h2>
         <p class="text-sm text-gray-500">Review leave requests.</p>
     </div>

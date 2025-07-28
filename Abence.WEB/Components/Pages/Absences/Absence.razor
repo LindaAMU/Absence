@@ -1,0 +1,191 @@
+﻿@page "/Absences"
+@using Abence.WEB.Models.AbsenceModels
+@using Abence.WEB.Services.AbsenceServices
+@using Abence.WEB.Utils
+@inject IAbsenceService _as
+@inject AuthenticationStateProvider _authProvider
+
+<div class="bg-white max-w-4xl mx-auto p-8 rounded-lg shadow-md">
+    <div class="flex justify-start mb-4">
+        <NavLink href="/Home" class="inline-flex items-center text-sm px-4 py-2 bg-sky-50 text-gray-700 rounded hover:bg-sky-100">
+            ← Back
+        </NavLink>
+    </div>
+    <div class="max-w-3xl mx-auto space-y-6 px-4">
+        <AuthorizeView Roles="Admin">
+            <!-- Encabezado -->
+            <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between space-y-2 sm:space-y-0 rounded-md">
+                <h1 class="text-2xl font-bold text-gray-800">
+                    Pending Absence Requests
+                </h1>
+            </div>
+            <!-- Pendientes -->
+            <div class="overflow-x-auto shadow-md rounded-lg border border-sky-200">
+                <table class="w-full text-sm text-left text-gray-500">
+                    <thead class="text-center text-xs text-gray-700 uppercase bg-sky-200">
+                        <tr>
+                            <th class="px-4 py-2">#</th>
+                            <th class="px-4 py-2">Email</th>
+                            <th class="px-4 py-2">Type</th>
+                            <th class="px-4 py-2">Stard Date</th>
+                            <th class="px-4 py-2">End Date</th>
+                            <th class="px-4 py-2">Status</th>
+                            <th class="px-4 py-2">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody class="divide-y divide-gray-200 text-sm">
+                        @foreach (var p in _pendings)
+                        {
+                            <tr>
+                                <td class="px-4 py-2">@p.Id</td>
+                                <td class="px-4 py-2">@p.Email</td>
+                                <td class="px-4 py-2">@p.AbsenceType</td>
+                                <td class="px-4 py-2">@p.StartDate</td>
+                                <td class="px-4 py-2">@p.EndDate</td>
+                                <td class="px-4 py-2">@p.RequestStatus</td>
+                                <td class="text-center px-4 py-2 space-x-2">
+                                    <button class="text-blue-600 hover:underline"
+                                            @onclick="() => ApproveRequest((int)p.Id)">
+                                        Approve
+                                    </button>
+                                    <button class="text-red-600 hover:underline"
+                                            @onclick="() => RejectRequest((int)p.Id)">
+                                        Reject
+                                    </button>
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </AuthorizeView>
+
+        <!-- Encabezado y botón -->
+        <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between space-y-2 sm:space-y-0 rounded-md">
+            <h1 class="text-2xl font-bold text-gray-800">
+                All Absence Requests
+            </h1>
+            <AuthorizeView Roles="User">
+                <button class="bg-sky-600 text-white px-4 py-2 rounded-md hover:bg-sky-700 transition-colors font-semibold"
+                        @onclick="OpenModal">
+                    New Absence Requests
+                </button>
+            </AuthorizeView>
+        </div>
+        <!-- Todas las solicitudes según rol -->
+        <div class="overflow-x-auto shadow-md rounded-lg border border-sky-200">
+            <table class="w-full text-sm text-left text-gray-500">
+                <thead class="text-center text-xs text-gray-700 uppercase bg-sky-200">
+                    <tr>
+                        <th class="px-4 py-2">#</th>
+                        <th class="px-4 py-2">Email</th>
+                        <th class="px-4 py-2">Type</th>
+                        <th class="px-4 py-2">Stard Date</th>
+                        <th class="px-4 py-2">End Date</th>
+                        <th class="px-4 py-2">Status</th>
+                    </tr>
+                </thead>
+                <tbody class="divide-y divide-gray-200 text-sm">
+                    @foreach (var a in _absences)
+                    {
+                        <tr>
+                            <td class="px-4 py-2">@a.Id</td>
+                            <td class="px-4 py-2">@a.Email</td>
+                            <td class="px-4 py-2">@a.AbsenceType</td>
+                            <td class="px-4 py-2">@a.StartDate</td>
+                            <td class="px-4 py-2">@a.EndDate</td>
+                            <td class="px-4 py-2">@a.RequestStatus</td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<NewAbsenceModal Visible="_showModal" OnClose="CloseModal" OnSubmit="HandleSubmit" BackendError="@_responseMessage" />
+
+@code {
+    private List<AbsenceModel> _absences = new();
+    private List<AbsenceModel> _pendings = new();
+    private bool _showModal = false;
+    private string _responseMessage = "";
+
+    protected override void OnInitialized()
+    {
+        RefreshAbsences();
+    }    
+
+    private async Task RefreshAbsences()
+    {
+        var authState = await _authProvider.GetAuthenticationStateAsync();
+        var user = authState.User;
+        if (user.IsInRole("Admin"))
+        {
+            var allRequests = await _as.GetAll();
+            _absences = allRequests.Where(r => r.RequestStatus != Utils.Constants.RequestStatus.Pending).ToList();
+            _pendings = allRequests.Where(r => r.RequestStatus == Utils.Constants.RequestStatus.Pending).ToList();
+        }
+        else
+        {
+            _absences = await _as.GetAll();            
+        }
+        StateHasChanged();
+    }
+
+    private void OpenModal()
+    {
+        _showModal = true;
+    }
+
+    private async Task CloseModal()
+    {
+        _showModal = false;
+    }
+
+    private async Task HandleSubmit(AbsenceLightModel lightModel)
+    {
+        var response = await _as.Create(lightModel);
+
+        if (response != null && response.Success)
+        {
+            _responseMessage = "";
+            _showModal = false;
+            await RefreshAbsences();
+        }
+        else if (response != null)
+        {
+            _responseMessage = response.Message;
+            _showModal = true;
+        }
+    }
+
+    private async Task ApproveRequest(int absenceId)
+    {
+        var response = await _as.UpdateStatus(absenceId, Constants.RequestStatus.Approve);
+
+        if (response != null && response.Success)
+        {
+            await RefreshAbsences();
+        }
+        else
+        {
+            _responseMessage = response?.Message ?? "Error approving request.";
+        }
+    }
+
+    private async Task RejectRequest(int absenceId)
+    {
+        var response = await _as.UpdateStatus(absenceId, Constants.RequestStatus.Rejected);
+
+        if (response != null && response.Success)
+        {
+            await RefreshAbsences();
+        }
+        else
+        {
+            _responseMessage = response?.Message ?? "Error rejecting request.";
+        }
+    }
+
+}
